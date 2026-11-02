@@ -9,11 +9,77 @@ Cada carpeta es un proyecto independiente y se ejecuta sola.
 
 > **Qué es de dónde.** `EjemploResuelto01`–`EjemploResuelto05` son las cinco clases de las diapositivas 15 a 21 del deck `(12-1) MatClase-1`, transcritas **tal cual**; lo único agregado son los `import` que la diapositiva recorta por falta de espacio. `EjemploResuelto06`–`EjemploResuelto10` **amplían** dos láminas que el material enuncia pero no ejemplifica: la lámina 13, que lista seis controles sin mostrar código de ninguno, y la lámina 20, que lista diez tipos de evento y solo ejemplifica `ActionEvent`.
 
+## Antes de empezar · el entorno (NetBeans)
+
+Esta semana el programa deja de terminar solo y pasa a abrir ventanas. Son **cinco cosas** que conviene dejar resueltas en los primeros minutos, porque si no se comen la clase entera.
+
+### 1. Clase normal, NO "JFrame Form"
+
+En NetBeans, *New File* ofrece dos caminos y **solo uno sirve para esta semana**:
+
+| Opción | Qué hace | ¿Esta semana? |
+|---|---|---|
+| *Java* → **Java Class** | Un `.java` vacío que tú escribes | ✅ **Sí** |
+| *Swing GUI Forms* → *JFrame Form* | Arrastras componentes y NetBeans genera el código | ❌ **No** |
+
+> El diseñador visual genera un método `initComponents()` **bloqueado para edición**, con `GroupLayout` y coordenadas automáticas. Ese código **no se parece en nada** a las diapositivas: no hay `setLayout`, no hay `add`, no se ve dónde se registra el evento. Es una herramienta legítima y la verán más adelante, pero si la usan esta semana no aprenden qué hace cada llamada, que es justamente lo que se evalúa.
+
+### 2. Las etiquetas grises de las diapositivas **no son código**
+
+Las capturas del material salieron de un IDE que muestra *hints* con el nombre de cada parámetro. En la lámina se lee:
+
+```java
+setLocation( x: ANCHO/2, y: ALTO/2);
+new JTextField( columns: 15);
+new JLabel( text: "Norte", SwingConstants.CENTER);
+```
+
+Esos `x:`, `y:`, `columns:`, `text:` **son ayudas visuales del editor, no forman parte de Java**. En NetBeans no aparecen, y si se copian tal cual el compilador da error. Lo que se escribe es:
+
+```java
+setLocation(ANCHO/2, ALTO/2);
+new JTextField(15);
+new JLabel("Norte", SwingConstants.CENTER);
+```
+
+Los archivos de este repositorio ya están **sin los hints**, listos para copiar.
+
+### 3. Ejecutar la clase correcta
+
+Hay dieciséis carpetas y cada una tiene su propio `main`. *Run Project* (**F6**) ejecuta siempre la clase principal configurada en el proyecto, no la que tienes abierta.
+
+> Usa **clic derecho sobre el archivo → Run File** (**Shift + F6**). Es el atajo de la semana.
+
+### 4. Matar los procesos colgados
+
+Si olvidas `setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE)`, cerrar la ventana **no termina el programa**. Al segundo o tercer *Run* tendrás varias ventanas apiladas y vas a jurar que tu código no funciona.
+
+> En la **esquina inferior derecha de NetBeans** aparece la barra de procesos en ejecución, con una **✕** para detener cada uno. Si algo se comporta raro, mira ahí primero.
+
+### 5. Codificación UTF-8
+
+El primer ejemplo del material ya trae una tilde: `setTitle("Marco vacío")`. Si el proyecto no está en UTF-8 se verá `Marco vacÃ­o`.
+
+> *Clic derecho en el proyecto → Properties → Sources → Encoding → UTF-8.*
+
+> **Los archivos van en el paquete por defecto.** Ninguna clase de este repositorio declara `package`, igual que en las diapositivas. Cópialos directamente dentro de `src/` y NetBeans los mostrará bajo `<default package>` con un aviso. Es correcto para este curso.
+
+### Los primeros 20 minutos
+
+Antes de abrir cualquier ejemplo, que **todos** lleguen a tener una ventana en pantalla:
+
+1. Proyecto nuevo, encoding en UTF-8.
+2. *New File → Java Class* llamada `VentanaBienvenida`.
+3. La **Práctica 1** de [`PRACTICAS_CLASE.md`](PRACTICAS_CLASE.md): cinco líneas, sin componentes, sin eventos.
+4. *Shift + F6* y ver la ventana centrada.
+
+Recién entonces el `EjemploResuelto01`.
+
 ## Ruta de las 5 horas
 
 | | Qué se ve | Material |
 |---|---|---|
-| **Sesión 1 · 3 h** | El marco, los controles y los gestores de posicionamiento | `EjemploResuelto01`–`04`, `06` · Prácticas 1 a 3 · `Actividad01` |
+| **Sesión 1 · 3 h** | Puesta a punto del entorno (20–25 min) · el marco, los controles y los gestores | `EjemploResuelto01`–`04`, `06` · Prácticas 1 a 3 · `Actividad01` |
 | **Sesión 2 · 2 h** | Eventos: el programa deja de mandar | `EjemploResuelto05`, `07`–`10` · Prácticas 4 a 8 · `Actividad02`–`05` |
 
 > El corte no es por mitad de diapositivas: es por **quién decide cuándo se ejecuta el código**. Toda la sesión 1 es código que corre en el orden en que lo escribiste. La sesión 2 rompe eso.
