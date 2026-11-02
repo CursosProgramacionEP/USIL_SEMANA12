@@ -1,6 +1,6 @@
 # Prácticas de clase · Semana 12
 
-Ocho prácticas para hacer en clase: **tres de componentes y contenedores** (sesión 1) y **cinco de eventos** (sesión 2).
+Ocho prácticas: **tres de componentes y contenedores** y **cinco de eventos**.
 Cada una tiene un caso, su diagrama, los pasos a seguir y el resultado que debes obtener.
 
 **Cómo trabajar cada práctica**
