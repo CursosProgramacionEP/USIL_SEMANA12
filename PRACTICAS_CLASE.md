@@ -1,6 +1,6 @@
 # Prácticas de clase · Semana 12
 
-Cinco prácticas para hacer en clase: **tres de componentes y contenedores**, **dos de eventos**.
+Ocho prácticas para hacer en clase: **tres de componentes y contenedores** (sesión 1) y **cinco de eventos** (sesión 2).
 Cada una tiene un caso, su diagrama, los pasos a seguir y el resultado que debes obtener.
 
 **Cómo trabajar cada práctica**
@@ -272,4 +272,158 @@ classDiagram
 
 **Piensa:** cuentas con dos botones y **dos oyentes distintos**, cada uno con su propio `actionPerformed`. Ninguno de los dos pregunta "¿qué botón me llamó?". Compáralo con lo que habrías tenido que escribir con un solo `if (boton == btnRegistrar) ... else if ...`. ¿Dónde viste ya exactamente esa diferencia? (Pista: Semana 11, `Práctica 5`.)
 
-> **El cierre de la semana.** Guarda los tres alumnos en un `ArrayList<Alumno>` además de mostrarlos en el área. Hoy no sirve de nada: al cerrar la ventana se pierde todo. **Eso** es lo que resuelve la Semana 13 con archivos.
+> **Guarda los alumnos en un `ArrayList<Alumno>`**, además de mostrarlos en el área. Ahora el `JTextArea` es solo una forma de *ver* la lista, no la lista misma. Comprueba la diferencia: agrega un tercer botón que recorra el `ArrayList` e imprima en consola solo los alumnos de ciclo mayor a 3. Si los datos únicamente vivieran en el texto del área, ese botón sería imposible.
+
+---
+
+## Práctica 6 · `CampoControlado` (el teclado, tecla por tecla)
+
+**Caso:** un campo para el DNI. Debe aceptar **solo dígitos**, avisar cuántos faltan mientras se escribe y ponerse en rojo si el usuario intenta meter una letra. Nada de esto espera a ningún botón: todo ocurre tecla por tecla.
+
+```mermaid
+sequenceDiagram
+    actor Usuario
+    participant Campo as JTextField
+    participant Oyente as KeyListener
+    participant Etiqueta as JLabel
+    Usuario->>Campo: presiona '4'
+    Campo->>Oyente: keyPressed
+    Campo->>Oyente: keyTyped (caracter '4')
+    Usuario->>Campo: suelta
+    Campo->>Oyente: keyReleased
+    Oyente->>Campo: getText().length()
+    Oyente->>Etiqueta: setText("Faltan 7 digitos")
+```
+
+**Pasos**
+
+1. Crea `CampoControlado extends JFrame`. Necesitas `import java.awt.event.*;`
+2. Atributos: `private JTextField txtDni;` y `private JLabel lblEstado;`
+3. En el constructor, arma una ventana simple con `FlowLayout`: la etiqueta `"DNI:"`, el campo de 12 columnas y `lblEstado` con el texto `"Faltan 8 digitos"`.
+4. Registra un `KeyListener` en `txtDni`. Como la interfaz tiene tres métodos, **debes escribir los tres**, aunque dos queden vacíos.
+5. En `keyReleased`: calcula `int faltan = 8 - txtDni.getText().length();` y actualiza `lblEstado`. Si `faltan <= 0`, el texto es `"DNI completo"`.
+6. En `keyTyped`: si el carácter **no** es un dígito, descarta la tecla con `e.consume();` y pon `lblEstado` en rojo con el mensaje `"Solo se permiten numeros"`.
+   ```java
+   if (!Character.isDigit(e.getKeyChar())) {
+       e.consume();
+       lblEstado.setForeground(Color.RED);
+       lblEstado.setText("Solo se permiten numeros");
+   }
+   ```
+7. Prueba escribiendo `4587abc1236`.
+
+**Resultado esperado**
+
+```
+┌──────────────────────────────────────────┐
+│ DNI: [45871236        ]                  │
+│ DNI completo                             │
+└──────────────────────────────────────────┘
+
+Las letras simplemente no entran: el campo las ignora.
+```
+
+**Piensa:** `e.consume()` en `keyTyped` funciona; en `keyReleased` no sirve de nada. ¿Por qué? Fíjate en qué momento de la secuencia el carácter se inserta realmente en el campo, y vuelve a mirar el diagrama de arriba.
+
+> **Reescríbelo con `KeyAdapter`.** `new KeyAdapter() { ... }` ya trae los tres métodos vacíos y te deja sobrescribir solo `keyTyped` y `keyReleased`. Cuenta las líneas que te ahorras. Esa clase existe exactamente por el problema que acabas de sufrir.
+
+---
+
+## Práctica 7 · `Pizarra` (el ratón y sus coordenadas)
+
+**Caso:** un panel que reacciona al ratón: cambia de color cuando el puntero entra, vuelve a su color al salir, y lleva la cuenta de los clics informando dónde cayó cada uno.
+
+```mermaid
+graph TD
+    F["JFrame 'Pizarra' · BorderLayout"]
+    F --- P["CENTER · JPanel lienzo (fondo blanco)"]
+    F --- L["SOUTH · JLabel lblInfo"]
+    P --- M["MouseListener: entered, exited, clicked"]
+```
+
+**Pasos**
+
+1. Crea `Pizarra extends JFrame` con atributos `private JPanel lienzo;` y `private JLabel lblInfo;` y un contador `private int clics = 0;`
+2. El lienzo es un `JPanel` con `setBackground(Color.WHITE)`, al `CENTER`. `lblInfo` va al `SOUTH`.
+3. Registra el oyente con **`MouseAdapter`**, no con `MouseListener`:
+   ```java
+   lienzo.addMouseListener(new MouseAdapter() {
+       // solo los metodos que te interesan
+   });
+   ```
+4. `mouseEntered`: fondo `Color.YELLOW`. `mouseExited`: fondo `Color.WHITE`.
+5. `mouseClicked`: incrementa el contador y pon en `lblInfo`
+   `"Clic #" + clics + " en (" + e.getX() + ", " + e.getY() + ")"`.
+6. Haz clic en la esquina superior izquierda del panel y después en la inferior derecha. Anota las coordenadas.
+
+**Resultado esperado**
+
+```
+┌───────────────────────────────────────┐
+│                                       │  blanco  → puntero afuera
+│          (panel lienzo)               │  amarillo→ puntero adentro
+│                                       │
+├───────────────────────────────────────┤
+│ Clic #3 en (287, 154)                 │
+└───────────────────────────────────────┘
+```
+
+**Piensa:** la esquina superior izquierda del panel da `(0, 0)` o algo muy cercano, **no** las coordenadas de tu pantalla. ¿Respecto a qué está midiendo `e.getX()`? Ahora registra el mismo oyente en el `JFrame` en vez del panel y haz clic en el mismo punto: los números cambian. ¿Por qué?
+
+> **Compara con la Práctica 6.** Allá usaste `KeyListener` con tres métodos y dos vacíos; aquí usaste `MouseAdapter` y escribiste solo tres de cinco. Las dos formas son válidas. La pregunta de diseño es: ¿qué ganaste y qué perdiste al heredar de una clase en vez de implementar la interfaz? (Pista: ya no puedes heredar de ninguna otra.)
+
+---
+
+## Práctica 8 · `MatriculaReactiva` (selección y cierre)
+
+**Caso:** la práctica de cierre de la semana. Una ficha donde **nada se confirma**: el costo se recalcula solo al cambiar el curso o marcar una opción. Y al intentar cerrar la ventana, el programa pregunta antes de perder los datos.
+
+```mermaid
+graph TD
+    F["JFrame 'Matricula' · BorderLayout · DO_NOTHING_ON_CLOSE"]
+    F --- P["NORTH · panel · GridLayout(3,1)"]
+    F --- R["CENTER · JLabel lblCosto (fuente grande)"]
+    P --- C1["JComboBox cboCurso"]
+    P --- C2["JCheckBox chkLaboratorio (+120)"]
+    P --- C3["JCheckBox chkMaterial (+45)"]
+    F --- W["WindowListener: windowClosing"]
+```
+
+**Pasos**
+
+1. Crea `MatriculaReactiva extends JFrame`. Atributos: el combo, las dos casillas y `lblCosto`.
+2. El combo lleva tres cursos. Usa un arreglo paralelo con sus precios base:
+   ```java
+   String[] cursos  = {"POO I", "Estructura de Datos", "Base de Datos"};
+   double[] precios = {850.0, 920.0, 780.0};
+   ```
+3. Escribe un método `private void recalcular()` que sume el precio del curso seleccionado (`cboCurso.getSelectedIndex()` te da la posición) más `120` si el laboratorio está marcado y `45` si el material lo está, y muestre el total en `lblCosto` con `String.format("Total: S/ %.2f", total)`.
+4. Registra un `ItemListener` en el combo y en las dos casillas. Los tres llaman a `recalcular()`.
+5. **En el combo, filtra:** `if (e.getStateChange() == ItemEvent.SELECTED)`. Sin ese filtro, `recalcular()` corre dos veces por cada cambio.
+6. Llama a `recalcular()` una vez al final del constructor, para que el total no nazca vacío.
+7. Pon `setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);` y registra un `WindowListener`. En `windowClosing`, pregunta con
+   `JOptionPane.showConfirmDialog(this, "Salir sin guardar la matricula?", "Confirmar", JOptionPane.YES_NO_OPTION);`
+   y llama a `System.exit(0)` solo si la respuesta es `JOptionPane.YES_OPTION`.
+
+**Resultado esperado**
+
+```
+┌────────────────────────────────────────┐
+│ [ Estructura de Datos        ▾ ]       │
+│ [x] Laboratorio (+120)                 │
+│ [ ] Material (+45)                     │
+├────────────────────────────────────────┤
+│           Total: S/ 1040.00            │
+└────────────────────────────────────────┘
+
+Al pulsar la ✕:   ┌─────────────────────────────┐
+                  │ Salir sin guardar la        │
+                  │ matricula?     [Si]  [No]   │
+                  └─────────────────────────────┘
+```
+
+**Piensa:** quita el filtro `ItemEvent.SELECTED` del combo y agrega un `System.out.println("recalculando")` dentro de `recalcular()`. Cambia de curso una sola vez y cuenta las líneas en la consola. Ahora explica, con el diagrama del `EjemploResuelto09` delante, qué fue cada una.
+
+> **El cierre de la semana.** Cambia `DO_NOTHING_ON_CLOSE` por `EXIT_ON_CLOSE` y vuelve a pulsar la ✕: el diálogo ya no alcanza a aparecer. Esa línea no es un detalle de configuración, es **quién toma la decisión de cerrar**: Java o tú.
+
+> **Y lo que falta.** Responder "No" salva los datos... hasta que respondas "Sí". Ningún programa de esta semana sobrevive a su propio cierre. Eso es exactamente lo que resuelve la **Semana 13 con archivos**.
